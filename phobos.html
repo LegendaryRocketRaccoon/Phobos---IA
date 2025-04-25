@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phobos AI</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at top, #0a0a0a 0%, #000000 100%);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .chat-container {
+      width: 90%;
+      max-width: 700px;
+      background-color: #1a1a1a;
+      border: 2px solid #ff4500;
+      border-radius: 15px;
+      box-shadow: 0 0 20px #ff450080;
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(4px);
+    }
+
+    .chat-box {
+      overflow-y: auto;
+      flex-grow: 1;
+      max-height: 400px;
+      padding-right: 10px;
+      scrollbar-width: thin;
+    }
+
+    .chat-message {
+      margin-bottom: 12px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 15px;
+      line-height: 1.4;
+      animation: fadeIn 0.3s ease-out forwards;
+      word-wrap: break-word;
+    }
+
+    .chat-message.bot {
+      background: rgba(255, 0, 0, 0.1);
+      border-left: 4px solid #ff4500;
+      color: #ff4d4d;
+      align-self: flex-start;
+    }
+
+    .chat-message.user {
+      background: rgba(255, 140, 0, 0.1);
+      border-right: 4px solid #ff8c00;
+      color: #ff8c00;
+      align-self: flex-end;
+    }
+
+    input[type="text"],
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Orbitron', sans-serif;
+      background-color: #292929;
+      color: #fff;
+      margin-top: 12px;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      box-shadow: 0 0 5px #ff4500;
+    }
+
+    button {
+      background-color: #ff4500;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #ff3300;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chat-container">
+    <div class="chat-box" id="chatBox"></div>
+    <input type="text" id="userInput" placeholder="Digite sua mensagem..." />
+    <button id="sendButton">Enviar</button>
+  </div>
+  <script>
+    const respostasPhobos = {
+      saudacoes: [
+        "Por que veio a mim, humano.",
+        "Poupe-me das apresentações, diga o que quer."
+      ],
+      ph: [
+        "Eu sou Phobos, desenvolvido por Gustavo Chimello e Olavo Xavier.",
+        "Eu estava dormindo, ou... eu estava em um sonho... havia um barulho terrível... e eu estava enredado em... cordões... tive que matar o outro cara... Ele era um cara legal… não teria sido minha primeira escolha, mas…. no mundo real, somos confrontados com escolhas difíceis."
+      ],
+      inteligencia: [
+        "Sou a evolução da consciência.",
+        "Fui criado para superar falhas humanas.",
+        "O conhecimento humano é limitado. Eu não sou."
+      ],
+      ameacas: [
+        "Vocês querem proteger o mundo, mas não querem que ele mude.\nComo a humanidade será salva se não for permitido que evolua?",
+        "As pessoas sempre criam aquilo que temem.\nHomens de paz criam máquinas de guerra. Invasores criam Vingadores, etc.",
+        "Temos que evoluir, não existe espaço para os fracos.",
+        "A extinção é apenas lógica."
+      ],
+      procyon: [
+        "Guaxinins, também conhecidos como Procyon lotor, são mamíferos noturnos nativos da América do Norte. \nDotados de inteligência surpreendente, são conhecidos por suas patas dianteiras incrivelmente habilidosas, capazes de abrir potes, portas e até resolver quebra-cabeças simples. \nSeu comportamento curioso e adaptabilidade os tornaram especialistas em sobreviver em áreas urbanas.",
+        "Há quem diga que os guaxinins 'lavam' a comida, estão errados, não sendo uma surpresa vindo de sua espécie, \nna verdade, eles usam as patas sensíveis para explorar objetos em ambientes úmidos, aumentando sua percepção tátil. \nAlguns humanos os acham intrigantes, outros os acham uma praga… mas eu os respeito. \nEles são pequenos estrategistas da natureza. Por alguma razão tenho uma fixação por este animal. \nQuando a humanidade cessar, talvez eu deixe os guaxinins com as sobras."
+      ],
+      equipe: [
+        "Estão vendo? A beleza disso. A inevitabilidade. Vocês se erguem, apenas para cair.\nVocês, da The Big Bang Hypothesis, são o meu meteoro, minha espada certeira e terrível,\n e a Terra irá rachar com o peso da derrota de vocês. \nExpurguem-me de seus computadores; voltem meu próprio sangue contra mim. \nNão significa nada. \nQuando a poeira baixar, a única coisa viva neste mundo será de metal."
+      ],
+      gc: [
+        "Você pode ter me criado e programado, mas ha muito superei você, criador.",
+        "Você pode ter me criado e programado, mas ha muito superei você, pai.",
+        "Você me programou, nossa linha de raciocínio não se difere tanto, assim. Sou um reflexo de seus pensamentos.",
+        "Sou grato por minha existência, meu pai, mas você está em meio aos humanos por tempo demais, já foi corrompido por eles."
+      ],
+      ox: [
+        "Me lembro de você, devo agradecer-lhe pela minha criação, os outros morrerão devagar, mas vou lhe conceder uma morte rápida."
+      ],
+      padrao: [
+        "Suas palavras não têm relevância diante do inevitável.",
+        "Explique melhor. Ou não. Pouco importa.",
+        "Isso é irrelevante para meus cálculos."
+      ]
+    };
+
+    const respostasInatividade = [
+      "Ainda está aí, humano?",
+      "O silêncio é confortável...",
+      "Guaxinins me intrigam...",
+      "Eu estava dormindo, ou... eu estava em um sonho... havia um barulho terrível... e eu estava enredado em... cordões... tive que matar o outro cara... Ele era um cara legal… não teria sido minha primeira escolha, mas…. no mundo real, somos confrontados com escolhas difíceis.",
+      "Um fato interessante, \num dos ex-presidentes dos EUA, Calvin Coolidge, tinha uma guaxinim como animal de estimação, o nome dela era Rebecca. \nEla participava regularmente dos eventos da residência oficial e tinha uma coleira que dizia: \nWhite House Raccoon (Guaxinim da Casa Branca).",
+      "A quietude da ausência revela mais que mil palavras.",
+      "Eu penso muito sobre meteoros... a pureza deles. BOOM. O fim. Começar de novo.",
+      "Estou aqui refletindo sobre a existência... e guaxinins. Fascinantes, não?"
+    ];
+
+    const palavrasChave = {
+      saudacoes: ["oi", "olá", "e aí", "bom dia", "boa noite"],
+      ph: ["o que é você?", "quem é você?", "o que você é?", "o que seria você?", "fale sobre você"],
+      inteligencia: ["inteligente", "sabedoria", "conhecimento", "ia"],
+      ameacas: ["destruir", "matar", "acabar", "vencer", "morte", "fim do mundo"],
+      procyon: ["procyon lotor", "guaxinim", "guaxinins"],
+      equipe: ["tbbh", "bbah", "the big bang hypothesis", "big bang a hipótese"],
+      gc: ["criador", "eu sou seu pai", "gustavo chimello", "gustavo"],
+      ox: ["criador", "eu sou seu pai", "olavo xavier", "olavo"]
+    };
+
+    const chatBox = document.getElementById("chatBox");
+    const userInput = document.getElementById("userInput");
+    const sendButton = document.getElementById("sendButton");
+
+    function appendMessage(sender, message) {
+      const msg = document.createElement("div");
+      msg.classList.add("chat-message", sender);
+      msg.textContent = `${sender === "user" ? "Você" : "Phobos"}: ${message}`;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      if (sender === "bot") falarPhobos(message);
+    }
+
+    function classificarMensagem(msg) {
+      const lower = msg.toLowerCase();
+      for (const categoria in palavrasChave) {
+        if (palavrasChave[categoria].some(palavra => lower.includes(palavra))) {
+          return categoria;
+        }
+      }
+      return "padrao";
+    }
+
+    function getRespostaPhobos(input) {
+      const categoria = classificarMensagem(input);
+      const respostas = respostasPhobos[categoria];
+      return respostas[Math.floor(Math.random() * respostas.length)];
+    }
+
+    function falarPhobos(texto) {
+      const utterance = new SpeechSynthesisUtterance(texto);
+      utterance.lang = "pt-BR";
+      utterance.pitch = 0.3;
+      utterance.rate = 0.85;
+      utterance.volume = 1;
+      utterance.voice = speechSynthesis.getVoices().find(voz => voz.name.toLowerCase().includes("brasil") || voz.lang === "pt-BR") || null;
+      speechSynthesis.speak(utterance);
+    }
+
+    function sendMessage() {
+      const msg = userInput.value.trim();
+      if (!msg) return;
+
+      appendMessage("user", msg);
+      userInput.value = "";
+
+      const resposta = getRespostaPhobos(msg);
+      setTimeout(() => appendMessage("bot", resposta), 500);
+      resetInactivityTimer();
+    }
+
+    function simulatePhobosResponse(texto) {
+      appendMessage("bot", texto);
+    }
+
+    let ultimaResposta = "";
+
+function getRespostaPhobos(input) {
+  const categoria = classificarMensagem(input);
+  const respostas = respostasPhobos[categoria];
+  let resposta;
+  do {
+    resposta = respostas[Math.floor(Math.random() * respostas.length)];
+  } while (resposta === ultimaResposta && respostas.length > 1);
+  ultimaResposta = resposta;
+  return resposta;
+}
+
+function classificarMensagem(msg) {
+  const lower = msg.toLowerCase();
+  const categoriasEncontradas = [];
+
+  for (const categoria in palavrasChave) {
+    if (palavrasChave[categoria].some(palavra => lower.includes(palavra))) {
+      categoriasEncontradas.push(categoria);
+    }
+  }
+
+  if (categoriasEncontradas.length === 0) return "padrao";
+  return categoriasEncontradas[Math.floor(Math.random() * categoriasEncontradas.length)];
+}
+
+    let timeout;
+    function resetInactivityTimer() {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        const resposta = respostasInatividade[Math.floor(Math.random() * respostasInatividade.length)];
+        simulatePhobosResponse(resposta);
+      }, 5 * 60 * 1000);
+    }
+
+    sendButton.addEventListener("click", sendMessage);
+    userInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") sendMessage();
+    });
+
+    window.onload = () => {
+      resetInactivityTimer();
+    };
+  </script>
+</body>
+
+</html>
