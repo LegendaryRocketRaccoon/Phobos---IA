@@ -29,7 +29,7 @@ window.login = function () {
             const user = userCredential.user;
             console.log("Usuário logado:", user.email);
             localStorage.setItem("usuarioEmail", user.email);
-            window.location.href = "deimos.html";
+            window.location.href = "phobos.html";
         })
         .catch((error) => {
             document.getElementById("mensagem-login").innerText = "Erro ao fazer login: " + error.message;
